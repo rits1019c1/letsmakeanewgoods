@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept Lab | 概念の演算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+        .slot-card {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .slot-card.spinning {
+            transform: scale(0.95) translateY(4px);
+            filter: blur(2px);
+            border-color: #cbd5e1;
+            opacity: 0.7;
+        }
+        .operator-circle {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 900;
+            font-size: 1.8rem;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        .op-multiply { background: #3b82f6; color: white; }
+        .op-subtract { background: #ef4444; color: white; }
+        .op-hybrid   { background: #10b981; color: white; }
+        
+        .btn-main {
+            background: #0f172a;
+            color: white;
+            transition: all 0.2s;
+            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.4);
+        }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.4); }
+        .btn-main:active { transform: scale(0.95); }
+        .btn-main:disabled { background: #94a3b8; transform: none; cursor: not-allowed; }
+
+        .success-banner {
+            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-12">
+    <div id="app" class="max-w-5xl mx-auto">
+        <header class="mb-12 text-center">
+            <div class="inline-block bg-slate-900 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-[0.3em] mb-4 uppercase">Innovation Generator</div>
+            <h1 class="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter mb-4">
+                CONCEPT <span id="header-op" class="text-slate-400">±</span> LAB
+            </h1>
+            <p class="text-slate-500 font-medium text-sm">掛け算、引き算、そしてハイブリッド。新しい価値を演算する。</p>
+        </header>
+
+        <main class="relative bg-white/50 backdrop-blur-sm border border-white rounded-[4rem] p-8 md:p-20 mb-16 shadow-2xl">
+            <!-- Detection Badge -->
+            <div id="detection-badge" class="absolute inset-x-0 -top-6 flex justify-center opacity-0 pointer-events-none transition-all duration-300">
+                <div class="bg-amber-400 text-slate-900 border-4 border-white px-8 py-3 rounded-full font-black text-sm flex items-center gap-3 shadow-xl">
+                    <span class="text-2xl">✨</span>
+                    <span>EXISTING: <span id="match-result-name" class="underline decoration-2">NAME</span></span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+                <!-- Card A -->
+                <div class="w-full lg:w-5/12 text-center">
+                    <div id="card-a" class="slot-card h-44 md:h-64 rounded-[3rem] flex items-center justify-center p-8">
+                        <span id="text-a" class="text-2xl md:text-4xl font-black text-slate-800 break-all leading-tight">PUSH</span>
+                    </div>
+                    <p class="mt-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Entity Alpha</p>
+                </div>
+
+                <!-- Operator -->
+                <div class="relative flex items-center justify-center">
+                    <div id="operator-container" class="operator-circle op-multiply shadow-xl">
+                        <span id="operator-symbol">×</span>
+                    </div>
+                    <!-- Hybrid Divider Text -->
+                    <div id="hybrid-divider" class="absolute -bottom-10 whitespace-nowrap text-[10px] font-black text-emerald-500 opacity-0 transition-opacity">
+                        DIVIDE BY 2
+                    </div>
+                </div>
+
+                <!-- Card B -->
+                <div class="w-full lg:w-5/12 text-center">
+                    <div id="card-b" class="slot-card h-44 md:h-64 rounded-[3rem] flex items-center justify-center p-8">
+                        <span id="text-b" class="text-2xl md:text-4xl font-black text-slate-800 break-all leading-tight">START</span>
+                    </div>
+                    <p id="label-b" class="mt-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Entity Beta</p>
+                </div>
+            </div>
+
+            <div class="mt-16 flex flex-col items-center gap-6">
+                <button id="btn-spin" class="btn-main px-16 py-6 rounded-full font-black text-xl tracking-widest uppercase">
+                    Spin Formula
+                </button>
+                <button id="btn-copy-main" class="invisible group flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black text-xs tracking-widest uppercase">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    <span>Copy This Result</span>
+                </button>
+            </div>
+        </main>
+
+        <section class="max-w-4xl mx-auto px-4">
+            <div class="flex items-center justify-between mb-10 border-b-2 border-slate-200 pb-6">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-black text-slate-800 tracking-widest uppercase">Discovery Archive</h2>
+                    <span id="history-count" class="bg-slate-200 text-slate-500 px-3 py-1 rounded-full text-[10px] font-black">0</span>
+                </div>
+                <button id="btn-clear" class="text-[11px] font-black text-slate-300 hover:text-red-500 transition-colors uppercase tracking-widest">Clear All</button>
+            </div>
+            <div id="log-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="empty-msg" class="col-span-full text-center py-20 bg-white/30 rounded-[3rem] border-2 border-dashed border-slate-200">
+                    <p class="text-slate-300 font-black text-xs uppercase tracking-[0.3em]">No experiments conducted yet.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const wordsA = [
+            '鳩', 'お風呂の給湯器', '炊飯器', '自転車', '歯ブラシ', '傘', '鏡', '窓ガラス', '玄関の鍵', 
+            '冷蔵庫', 'トイレ', 'オフィスチェア', '信号機', '自販機', '街灯', 'ゴミ箱', '靴', '観葉植物', 
+            '犬の首輪', 'メガネ', '財布', '枕', 'カーテン', 'まな板', '洗濯機', 'エレベーター', '駐車場', 
+            '病院', '公園', 'タクシー', '刑務所', '図書館', '神社', '墓地', 'カラス', 'ドローン', '3Dプリンタ',
+            'コンビニ', 'お弁当', 'ランドセル', '教科書', '履歴書', '領収書', '処方箋', '腕時計', 'カメラ',
+            '車', '本', '音楽プレイヤー', '電話', '地図', '日記', '問い', 'ニュース', 'レシピ', '薬', '映画',
+            'iPhone', 'MacBook', 'ノートPC', 'タブレット', 'スマートウォッチ', 'スニーカー', '革靴', 'スーツ',
+            '掃除機', '地雷探知機', '扇風機', 'エアコン', 'ベッド', 'テント', 'コーヒー', 'ジュース'
+        ];
+
+        const wordsB = [
+            '24時間営業', '顔認証', 'サブスク', 'API', 'ブロックチェーン', 'ChatGPT', '音声合成', 
+            '骨伝導', '非接触', '透明化', '自己修復', '太陽光発電', 'ワイヤレス充電', '生体認証', 
+            '投げ銭', 'シェアリング', 'ポータブル', '空飛ぶ', '自動追従', 'GPS連携', 'においセンサー',
+            'いびき検知', '温度調節', '水中対応', '宇宙対応', 'リモート操作', '超高速',
+            'ジュース', '物理ボタン', 'テンキー', '電源コード', 'ガソリン', '運転手', '画面', '重力',
+            '沈黙', '感情', '広告', '待ち時間', '場所', '国境', '法律', '人間', '実体', '羽根', '紙', '針',
+            '中央銀行', '放送', '店舗', 'Mac', 'iPhone', 'iPad', 'ノートPC', 'バイク', 'スクーター'
+        ];
+
+        const successCases = {
+            '洗濯機×24時間営業': 'コインランドリー',
+            '電話×ポータブル': '携帯電話 / iPhone',
+            '音楽プレイヤー×ポータブル': 'Walkman / iPod',
+            '車×シェアリング': 'Uber / カーシェア',
+            '本×サブスク': 'Kindle Unlimited',
+            '掃除機×地雷探知機': 'ルンバ',
+            '傘×シェアリング': 'アイカサ',
+            '玄関の鍵×顔認証': 'スマートロック',
+            '腕時計×ポータブル': 'スマートウォッチ',
+            '自転車×シェアリング': 'シェアサイクル',
+            '駐車場×シェアリング': 'akippa',
+            '財布×非接触': '電子マネー',
+            '窓ガラス×透明化': '調光ガラス',
+            '問い×ジュース': 'ムリンス',
+            // 引き算
+            '多機能携帯−物理ボタン': 'iPhone / スマートフォン',
+            '多機能携帯−テンキー': 'iPhone / スマートフォン',
+            '掃除機−電源コード': 'コードレス掃除機',
+            '車−運転手': '自動運転車',
+            '扇風機−羽根': 'ダイソン Air Multiplier',
+            '財布−実体': 'デジタルウォレット',
+            '本−紙': '電子書籍',
+            'テレビ−放送': 'スマートTV / Netflix',
+            '時計−針': 'デジタル時計',
+            'オフィス−場所': 'リモートワーク / Slack',
+            // ハイブリッド
+            'iPhone⊕Mac': 'iPad',
+            'iPhone⊕MacBook': 'iPad',
+            'ノートPC⊕タブレット': 'Surface / 2-in-1 PC',
+            '自転車⊕バイク': '電動キックボード',
+            '自転車⊕スクーター': '電動キックボード',
+            '本⊕テレビ': 'Kindle / 電子書籍リーダー',
+            'スニーカー⊕革靴': 'レザースニーカー / ドレススニーカー',
+            '車⊕飛行機': '空飛ぶクルマ'
+        };
+
+        const state = {
+            currentA: "",
+            currentB: "",
+            currentOp: "×",
+            history: []
+        };
+
+        const btnSpin = document.getElementById('btn-spin');
+        const btnCopyMain = document.getElementById('btn-copy-main');
+        const btnClear = document.getElementById('btn-clear');
+        const textA = document.getElementById('text-a');
+        const textB = document.getElementById('text-b');
+        const operatorSymbol = document.getElementById('operator-symbol');
+        const operatorContainer = document.getElementById('operator-container');
+        const hybridDivider = document.getElementById('hybrid-divider');
+        const detectionBadge = document.getElementById('detection-badge');
+        const matchResultName = document.getElementById('match-result-name');
+        const logContainer = document.getElementById('log-container');
+        const emptyMsg = document.getElementById('empty-msg');
+        const historyCount = document.getElementById('history-count');
+
+        function spin() {
+            btnSpin.disabled = true;
+            btnCopyMain.style.visibility = "hidden";
+            detectionBadge.classList.add('opacity-0');
+            
+            const cardA = document.getElementById('card-a');
+            const cardB = document.getElementById('card-b');
+            cardA.classList.add('spinning');
+            cardB.classList.add('spinning');
+
+            let count = 0;
+            const max = 20;
+
+            const interval = setInterval(() => {
+                const tempA = wordsA[Math.floor(Math.random() * wordsA.length)];
+                const tempB = wordsB[Math.floor(Math.random() * wordsB.length)];
+                
+                // 演算子の確率分布
+                const rand = Math.random();
+                let tempOp = "×";
+                if (rand > 0.7) tempOp = "−";
+                if (rand > 0.85) tempOp = "⊕";
+                
+                textA.textContent = tempA;
+                textB.textContent = tempB;
+                operatorSymbol.textContent = tempOp;
+                
+                updateOperatorStyle(tempOp);
+
+                count++;
+                if (count > max) {
+                    clearInterval(interval);
+                    finalizeSpin(tempA, tempB, tempOp);
+                }
+            }, 80);
+        }
+
+        function updateOperatorStyle(op) {
+            operatorContainer.className = "operator-circle shadow-xl";
+            hybridDivider.classList.add('opacity-0');
+
+            if (op === "×") {
+                operatorContainer.classList.add('op-multiply');
+            } else if (op === "−") {
+                operatorContainer.classList.add('op-subtract');
+            } else {
+                operatorContainer.classList.add('op-hybrid');
+                hybridDivider.classList.remove('opacity-0');
+            }
+        }
+
+        function finalizeSpin(a, b, op) {
+            state.currentA = a;
+            state.currentB = b;
+            state.currentOp = op;
+            
+            document.getElementById('card-a').classList.remove('spinning');
+            document.getElementById('card-b').classList.remove('spinning');
+            
+            const formula = `${a}${op}${b}`;
+            const foundName = successCases[formula];
+
+            if (foundName) {
+                matchResultName.textContent = foundName;
+                detectionBadge.classList.remove('opacity-0');
+                detectionBadge.classList.add('success-banner');
+            }
+
+            btnSpin.disabled = false;
+            btnCopyMain.style.visibility = "visible";
+            
+            saveHistory(a, b, op, foundName);
+        }
+
+        function saveHistory(a, b, op, match) {
+            const entry = { a, b, op, match, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
+            state.history.unshift(entry);
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyCount.textContent = state.history.length;
+            if (state.history.length > 0) emptyMsg.style.display = 'none';
+            
+            logContainer.innerHTML = "";
+            state.history.forEach((item, index) => {
+                const div = document.createElement('div');
+                const opColor = item.op === '×' ? 'text-blue-500' : (item.op === '−' ? 'text-red-500' : 'text-emerald-500');
+                
+                div.className = `bg-white p-6 rounded-[2.5rem] border-2 ${item.match ? 'border-amber-200 bg-amber-50/20' : 'border-white'} flex items-center justify-between group transition-all hover:shadow-lg hover:border-slate-200`;
+                
+                let matchHtml = item.match ? 
+                    `<div class="text-[9px] font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-full mb-2 inline-block">LEGACY: ${item.match}</div>` : '';
+
+                div.innerHTML = `
+                    <div class="flex-1">
+                        ${matchHtml}
+                        <div class="text-xl font-black text-slate-800 leading-tight">
+                            ${item.a} <span class="${opColor} mx-1">${item.op}</span> ${item.b}
+                            ${item.op === '⊕' ? '<span class="text-[10px] text-emerald-400 ml-1">/ 2</span>' : ''}
+                        </div>
+                        <div class="text-[9px] font-bold text-slate-300 mt-2 uppercase tracking-widest">${item.time}</div>
+                    </div>
+                    <button onclick="copySpecific('${item.a} ${item.op} ${item.b}', this)" class="opacity-0 group-hover:opacity-100 transition-all text-[10px] font-black text-slate-400 hover:text-slate-900 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full">
+                        COPY
+                    </button>
+                `;
+                logContainer.appendChild(div);
+            });
+        }
+
+        function copyText(text, btn) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "<span>COPIED!</span>";
+            setTimeout(() => { btn.innerHTML = originalText; }, 1000);
+        }
+
+        window.copySpecific = (text, btn) => copyText(text, btn);
+
+        btnSpin.addEventListener('click', spin);
+        btnCopyMain.addEventListener('click', () => {
+            let formulaText = `${state.currentA} ${state.currentOp} ${state.currentB}`;
+            if (state.currentOp === '⊕') formulaText += " / 2";
+            copyText(formulaText, btnCopyMain);
+        });
+
+        btnClear.addEventListener('click', () => {
+            state.history = [];
+            renderHistory();
+            emptyMsg.style.display = 'block';
+            historyCount.textContent = "0";
+        });
+
+        window.onload = () => {
+            console.log("Concept Lab V2: Hybrid Mode Active");
+        };
+    </script>
+</body>
+</html>
