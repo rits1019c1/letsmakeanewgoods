@@ -6,14 +6,10 @@
     
     <title>CONCEPT ± LAB | 概念の演算器</title>
     <meta name="description" content="既存の概念を掛け合わせ、引き、割り、新しいイノベーションの種を発見する。">
-    
-    <!-- Open Graph Tags -->
     <meta property="og:title" content="CONCEPT ± LAB | 概念の演算器">
-    <meta property="og:description" content="既存の概念を掛け合わせ、引き、割り、新しいイノベーションの種を発見する実験場。">
+    <meta property="og:description" content="既存の概念を掛け合わせ、引き、割り、新しいイノベーションの種を発見する。">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://concept-lab.example.com">
-    <meta property="og:image" content="https://placehold.co/1200x630/0f172a/ffffff?text=CONCEPT+LAB">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:image" content="https://placehold.co/1200x630/f8fafc/0f172a?text=CONCEPT+LAB">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,27 +25,33 @@
 
         body {
             font-family: '2045alphabet', 'Noto Sans JP', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             color: #0f172a;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        .custom-font {
-            font-family: '2045alphabet', sans-serif;
-        }
+        .custom-font { font-family: '2045alphabet', sans-serif; }
 
         .slot-card {
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             background: white;
-            border: 4px solid #f1f5f9;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 4px solid #fff;
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 20%, rgba(255,255,255,0) 80%, rgba(255,255,255,0.8) 100%);
+            pointer-events: none;
         }
 
         .slot-card.spinning {
-            transform: scale(0.98) translateY(8px);
             filter: blur(4px);
-            opacity: 0.6;
+            transform: scale(0.98);
         }
 
         .operator-circle {
@@ -60,9 +62,10 @@
             justify-content: center;
             border-radius: 50%;
             font-weight: 900;
-            font-size: 2.2rem;
+            font-size: 2rem;
             transition: all 0.3s;
             z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
         .op-multiply { background: #3b82f6; color: white; }
@@ -73,95 +76,78 @@
             background: #0f172a;
             color: white;
             transition: all 0.2s;
-            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.2);
         }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.3); }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
         .btn-main:active { transform: scale(0.95); }
 
-        .success-banner {
-            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        @keyframes success-reveal {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
-        @keyframes bounceIn {
-            0% { transform: translateY(-20px) scale(0.8); opacity: 0; }
-            70% { transform: translateY(5px) scale(1.05); opacity: 1; }
-            100% { transform: translateY(0) scale(1); }
-        }
-
-        /* 履歴カードの装飾 */
-        .history-item {
-            border-left-width: 6px;
-        }
+        .reveal-anim { animation: success-reveal 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
     </style>
 </head>
 <body class="p-6 md:p-12">
     <div id="app" class="max-w-6xl mx-auto">
         <header class="mb-16 text-center">
-            <div class="inline-block border-2 border-slate-900 text-slate-900 px-6 py-1 rounded-full text-[10px] font-black tracking-[0.4em] mb-6 uppercase">Concept Multiplier Lab</div>
-            <h1 class="text-5xl md:text-8xl font-black text-slate-900 tracking-tighter mb-4 custom-font">
+            <h1 class="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter mb-4 custom-font">
                 CONCEPT <span id="header-op" class="text-slate-300">±</span> LAB
             </h1>
-            <p class="text-slate-400 font-bold text-xs tracking-widest uppercase mt-4">Multiply, Subtract, or Hybridize for Innovation.</p>
+            <p class="text-slate-400 font-bold text-[11px] tracking-[0.5em] uppercase">Hyper-Context Innovation Engine</p>
         </header>
 
-        <main class="relative bg-white border border-slate-100 rounded-[3rem] md:rounded-[5rem] p-10 md:p-24 mb-20 shadow-xl">
-            <!-- Existing Success Detection Badge -->
-            <div id="detection-badge" class="absolute inset-x-0 -top-8 flex justify-center opacity-0 pointer-events-none transition-all duration-300 scale-90">
-                <div class="bg-amber-400 text-slate-900 border-4 border-white px-10 py-4 rounded-full font-black shadow-2xl">
-                    <div class="text-[10px] uppercase tracking-widest opacity-70 mb-1">EXISTING INNOVATION</div>
-                    <div id="match-result-name" class="text-xl md:text-2xl custom-font">NAME</div>
+        <main class="relative bg-white/50 backdrop-blur-xl border-2 border-white rounded-[4rem] p-8 md:p-20 mb-20 shadow-xl overflow-hidden">
+            <!-- Detection Badge -->
+            <div id="detection-badge" class="absolute inset-x-0 -top-1 px-4 flex justify-center opacity-0 pointer-events-none transition-all duration-700">
+                <div class="bg-amber-400 text-slate-900 px-10 py-4 rounded-b-[2rem] font-black shadow-2xl reveal-anim">
+                    <div class="text-[10px] uppercase tracking-widest opacity-80 mb-1">Legacy Concept Detected</div>
+                    <div id="match-result-name" class="text-xl md:text-2xl custom-font">RECOGNIZED CONCEPT</div>
                 </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 mt-10">
                 <!-- Card A -->
                 <div class="w-full lg:w-5/12 text-center">
-                    <div id="card-a" class="slot-card h-56 md:h-80 rounded-[4rem] flex items-center justify-center p-10">
-                        <span id="text-a" class="text-3xl md:text-5xl font-black text-slate-800 break-all leading-tight custom-font">START</span>
+                    <div id="card-a" class="slot-card h-56 md:h-80 rounded-[3.5rem] flex items-center justify-center p-10">
+                        <span id="text-a" class="text-3xl md:text-5xl font-black text-slate-800 custom-font leading-tight">IDEA</span>
                     </div>
                 </div>
 
                 <!-- Operator -->
                 <div class="relative flex items-center justify-center">
-                    <div id="operator-container" class="operator-circle op-multiply shadow-lg">
+                    <div id="operator-container" class="operator-circle op-multiply">
                         <span id="operator-symbol" class="custom-font">×</span>
                     </div>
-                    <!-- Hybrid Divider Text -->
-                    <div id="hybrid-divider" class="absolute -bottom-12 whitespace-nowrap text-[11px] font-black text-emerald-500 opacity-0 transition-opacity tracking-tighter custom-font">
-                        DIVIDE BY 2
-                    </div>
+                    <div class="absolute -bottom-10 whitespace-nowrap text-[10px] font-black text-slate-300 uppercase tracking-widest" id="op-label">Multiply</div>
                 </div>
 
                 <!-- Card B -->
                 <div class="w-full lg:w-5/12 text-center">
-                    <div id="card-b" class="slot-card h-56 md:h-80 rounded-[4rem] flex items-center justify-center p-10">
-                        <span id="text-b" class="text-3xl md:text-5xl font-black text-slate-800 break-all leading-tight custom-font">SYSTEM</span>
+                    <div id="card-b" class="slot-card h-56 md:h-80 rounded-[3.5rem] flex items-center justify-center p-10">
+                        <span id="text-b" class="text-3xl md:text-5xl font-black text-slate-800 custom-font leading-tight">VALUE</span>
                     </div>
                 </div>
             </div>
 
             <div class="mt-20 flex flex-col items-center gap-8">
                 <button id="btn-spin" class="btn-main px-20 py-8 rounded-full font-black text-2xl tracking-[0.2em] uppercase custom-font">
-                    SPIN FORMULA
+                    Spin Formula
                 </button>
-                <button id="btn-copy-main" class="invisible group flex items-center gap-4 text-slate-400 hover:text-slate-900 transition-colors font-black text-xs tracking-[0.3em] uppercase">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                    <span>Copy Result</span>
+                <button id="btn-copy-main" class="invisible flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-all font-black text-xs tracking-widest uppercase">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    <span>Copy This Concept</span>
                 </button>
             </div>
         </main>
 
-        <section class="max-w-5xl mx-auto">
-            <div class="flex items-center justify-between mb-12 border-b-4 border-slate-100 pb-8">
-                <div class="flex items-center gap-6">
-                    <h2 class="text-2xl font-black text-slate-800 tracking-tighter custom-font">DISCOVERY ARCHIVE</h2>
-                    <span id="history-count" class="bg-slate-900 text-white px-4 py-1 rounded-full text-xs font-black custom-font">0</span>
-                </div>
-                <button id="btn-clear" class="text-xs font-black text-slate-300 hover:text-red-500 transition-colors uppercase tracking-widest">Destroy Archive</button>
+        <section class="max-w-4xl mx-auto mb-32">
+            <div class="flex items-center justify-between mb-10 border-b border-slate-200 pb-6">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight custom-font uppercase">Lab History</h2>
+                <button id="btn-clear" class="text-[11px] font-black text-slate-300 hover:text-rose-500 transition-colors uppercase tracking-[0.3em]">Flush History</button>
             </div>
-            <div id="log-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-32">
-                <!-- Empty Placeholder -->
-                <div id="empty-msg" class="col-span-full text-center py-32 bg-slate-50/50 rounded-[4rem] border-4 border-dashed border-slate-100">
-                    <p class="text-slate-300 font-black text-xs uppercase tracking-[0.5em]">No lab data recorded yet.</p>
+            <div id="log-container" class="space-y-6">
+                <div id="empty-msg" class="text-center py-24 bg-white/30 rounded-[3rem] border-4 border-dashed border-white">
+                    <p class="text-slate-300 font-bold text-xs uppercase tracking-[0.5em]">No concepts recorded in this session.</p>
                 </div>
             </div>
         </section>
@@ -174,47 +160,89 @@
             '犬の首輪', 'メガネ', '財布', '枕', 'カーテン', 'まな板', '洗濯機', 'エレベーター', '駐車場', 
             '病院', '公園', 'タクシー', '刑務所', '図書館', '神社', '墓地', 'カラス', 'ドローン', '3Dプリンタ',
             'コンビニ', 'お弁当', 'ランドセル', '教科書', '履歴書', '領収書', '処方箋', '腕時計', 'カメラ',
-            '車', '本', '音楽プレイヤー', '電話', '地図', '日記', '問い', 'ニュース', 'レシピ', '薬', '映画',
-            'iPhone', 'MacBook', 'ノートPC', 'タブレット', 'スマートウォッチ', 'スニーカー', '革靴', 'スーツ',
-            '掃除機', '地雷探知機', '扇風機', 'エアコン', 'ベッド', 'テント', 'コーヒー', 'ジュース', '嘘', '脳波',
-            '感情', '匂い', '嘘発見器', '多機能携帯', '放送', 'テレビ', '店舗', 'ピカチュウ', 'イーロン・マスク'
+            '車', '本', '映画', 'iPhone', 'MacBook', 'ノートPC', 'タブレット', 'スマートウォッチ', 'スニーカー', 
+            '革靴', 'スーツ', '掃除機', '地雷探知機', '扇風機', 'エアコン', 'ベッド', 'テント', 'コーヒー', 
+            'ニュース', '薬', '嘘', '脳波', '感情', '匂い', '放送', 'テレビ', '店舗', 'ピカチュウ', 'イーロン・マスク',
+            'タイヤ', '地図', '辞書', '会議', 'カミソリ', 'ホテル', '看板', '銀行', 'レストラン', '筋肉', '視線',
+            '赤ちゃん', '老人', '死', '影', '鏡', '水たまり', '昆虫', '心臓', 'DNA', '宇宙船', '鍵穴','ビンゴカード','意味不明','最適化','デジタル'
         ];
 
         const wordsB = [
-            '24時間営業', '顔認証', 'サブスク', 'API', 'ブロックチェーン', 'ChatGPT', '音声合成', 
+            '24時間営業', '顔認証', 'サブスク', 'API', 'ブロックチェーン', 'ChatGPT', '音声合成', 'ユーモア',
             '骨伝導', '非接触', '透明化', '自己修復', '太陽光発電', 'ワイヤレス充電', '生体認証', 
             '投げ銭', 'シェアリング', 'ポータブル', '空飛ぶ', '自動追従', 'GPS連携', 'においセンサー',
-            'いびき検知', '温度調節', '水中対応', '宇宙対応', 'リモート操作', '超高速',
-            'ジュース', '物理ボタン', 'テンキー', '電源コード', 'ガソリン', '運転手', '画面', '重力',
-            '沈黙', '感情', '広告', '待ち時間', '場所', '国境', '法律', '人間', '実体', '羽根', '紙', '針',
-            '中央銀行', 'Mac', 'iPhone', 'iPad', 'ノートPC', 'バイク', 'スクーター', '問い'
+            '水中対応', '宇宙対応', 'リモート操作', '超高速', '物理ボタン', 'テンキー', '電源コード', 
+            'ガソリン', '運転手', '画面', '重力', '沈黙', '感情', '広告', '待ち時間', '場所', '国境', 
+            '法律', '人間', '実体', '羽根', '紙', '針', 'Mac', 'iPhone', 'iPad', 'ノートPC', 'バイク', 
+            'スクーター', '問い', '読み放題', 'リアルタイム', 'パーソナライズ', 'スキャン', '現金', '居場所','記号',
+            'ディスプレイ', 'センサー', 'シャワー', '生成AI', 'VR', 'AR', 'メタバース', '液体状', '不可視','肉体'
+            '全自動', '使い放題'
         ];
 
         const successCases = {
+            // 掛け算 (×)
             '洗濯機×24時間営業': 'コインランドリー',
+            '洗濯機×シェアリング': 'コインランドリー',
             '電話×ポータブル': '携帯電話 / iPhone',
             '音楽プレイヤー×ポータブル': 'Walkman / iPod',
             '車×シェアリング': 'Uber / カーシェア',
             '本×サブスク': 'Kindle Unlimited',
+            '本×読み放題': 'Kindle Unlimited',
+            '映画×サブスク': 'Netflix',
             '掃除機×地雷探知機': 'ルンバ',
             '傘×シェアリング': 'アイカサ',
             '玄関の鍵×顔認証': 'スマートロック',
-            '腕時計×ポータブル': 'スマートウォッチ',
+            '玄関の鍵×スマートフォン': 'スマートロック',
             '自転車×シェアリング': 'シェアサイクル',
             '駐車場×シェアリング': 'akippa',
-            '財布×非接触': '電子マネー',
+            '財布×非接触': '電子マネー / Apple Pay',
             '窓ガラス×透明化': '調光ガラス',
             '問い×ジュース': 'ムリンス',
+            '鳩×時計': '鳩時計',
+            '地図×GPS連携': 'カーナビ / Google Maps',
+            '看板×ディスプレイ': 'デジタルサイネージ',
+            'ゴミ箱×センサー': '自動開閉ゴミ箱',
+            'トイレ×シャワー': '温水洗浄便座 (ウォシュレット)',
+            '辞書×インターネット': 'Wikipedia',
+            'カミソリ×サブスク': 'Dollar Shave Club',
+            '服×サブスク': 'メチャカリ',
+            'ニュース×パーソナライズ': 'SmartNews / Gunosy',
+            '領収書×スキャン': 'マネーフォワード / クラウド会計',
+            'メガネ×骨伝導': 'オーディオグラス',
+            'コーヒー×居場所': 'スターバックス / サードプレイス',
+            'ホテル×シェアリング': 'Airbnb / 民泊',
+            '教科書×読み放題': 'スタディサプリ / 電子教科書',
+            'エアコン×パーソナライズ': 'AI搭載スマートエアコン',
+            '3Dプリンタ×API': 'オンデマンド製造サービス',
+            'メガネ×ChatGPT': 'AI Glass / Meta Ray-Ban',
+            'お弁当×人間': 'Uber Eats / 出前館',
+            'カメラ×ドアホン': 'Ring (スマートドアホン)',
+            '鏡×ディスプレイ': 'スマートミラー',
+            '植物×サブスク': 'Bloomee (花の定期便)',
+            'タクシー×GPS連携': 'GO / Uber Taxi',
+            '靴×センサー': 'スマートシューズ (ORPHE)',
+            '枕×センサー': 'スマート枕 (睡眠計測)',
+            '冷蔵庫×カメラ': 'スマート冷蔵庫',
+            '薬×サブスク': 'オンライン服薬指導サービス',
+            '意味不明×':'架空疑問点',
+            '最適化×ユーモア':'ONVA',
+            'デジタル×肉体':"Node-Lab"
+            // 引き算 (−)
             '多機能携帯−物理ボタン': 'iPhone / スマートフォン',
             '多機能携帯−テンキー': 'iPhone / スマートフォン',
-            '掃除機−電源コード': 'コードレス掃除機',
+            '掃除機−電源コード': 'コードレス掃除機 (Dyson)',
             '車−運転手': '自動運転車',
             '扇風機−羽根': 'ダイソン Air Multiplier',
             '財布−実体': 'デジタルウォレット',
+            '財布−現金': 'キャッシュレス決済',
             '本−紙': '電子書籍',
             'テレビ−放送': 'スマートTV / Netflix',
             '時計−針': 'デジタル時計',
-            'オフィス−場所': 'リモートワーク / Slack',
+            '会議−場所': 'Zoom / リモート会議',
+            '銀行−場所': 'ネット銀行 / Neobank',
+            '店舗−実体': 'ECサイト / Amazon',
+
+            // ハイブリッド (⊕)
             'iPhone⊕Mac': 'iPad',
             'iPhone⊕MacBook': 'iPad',
             'ノートPC⊕タブレット': 'Surface / 2-in-1 PC',
@@ -222,16 +250,10 @@
             '自転車⊕スクーター': '電動キックボード',
             '本⊕テレビ': 'Kindle / 電子書籍リーダー',
             'スニーカー⊕革靴': 'レザースニーカー',
-            '車⊕飛行機': '空飛ぶクルマ',
-            '鳩×時計': '鳩時計'
+            '車⊕飛行機': '空飛ぶクルマ'
         };
 
-        const state = {
-            currentA: "",
-            currentB: "",
-            currentOp: "×",
-            history: []
-        };
+        const state = { currentA: "", currentB: "", currentOp: "×", history: [] };
 
         const btnSpin = document.getElementById('btn-spin');
         const btnCopyMain = document.getElementById('btn-copy-main');
@@ -240,18 +262,17 @@
         const textB = document.getElementById('text-b');
         const operatorSymbol = document.getElementById('operator-symbol');
         const operatorContainer = document.getElementById('operator-container');
-        const hybridDivider = document.getElementById('hybrid-divider');
+        const opLabel = document.getElementById('op-label');
         const detectionBadge = document.getElementById('detection-badge');
         const matchResultName = document.getElementById('match-result-name');
         const logContainer = document.getElementById('log-container');
         const emptyMsg = document.getElementById('empty-msg');
-        const historyCount = document.getElementById('history-count');
 
         function spin() {
             btnSpin.disabled = true;
             btnCopyMain.style.visibility = "hidden";
             detectionBadge.classList.add('opacity-0');
-            detectionBadge.classList.remove('success-banner');
+            detectionBadge.classList.add('-translate-y-4');
             
             const cardA = document.getElementById('card-a');
             const cardB = document.getElementById('card-b');
@@ -264,16 +285,14 @@
             const interval = setInterval(() => {
                 const tempA = wordsA[Math.floor(Math.random() * wordsA.length)];
                 const tempB = wordsB[Math.floor(Math.random() * wordsB.length)];
-                
                 const rand = Math.random();
                 let tempOp = "×";
                 if (rand > 0.6) tempOp = "−";
-                if (rand > 0.8) tempOp = "⊕";
+                if (rand > 0.85) tempOp = "⊕";
                 
                 textA.textContent = tempA;
                 textB.textContent = tempB;
                 operatorSymbol.textContent = tempOp;
-                
                 updateOperatorStyle(tempOp);
 
                 count++;
@@ -281,20 +300,20 @@
                     clearInterval(interval);
                     finalizeSpin(tempA, tempB, tempOp);
                 }
-            }, 100);
+            }, 70);
         }
 
         function updateOperatorStyle(op) {
-            operatorContainer.className = "operator-circle shadow-lg";
-            hybridDivider.classList.add('opacity-0');
-
+            operatorContainer.className = "operator-circle";
             if (op === "×") {
                 operatorContainer.classList.add('op-multiply');
+                opLabel.textContent = "Multiply";
             } else if (op === "−") {
                 operatorContainer.classList.add('op-subtract');
+                opLabel.textContent = "Subtract";
             } else {
                 operatorContainer.classList.add('op-hybrid');
-                hybridDivider.classList.remove('opacity-0');
+                opLabel.textContent = "Hybrid / 2";
             }
         }
 
@@ -312,60 +331,43 @@
             if (foundName) {
                 matchResultName.textContent = foundName;
                 detectionBadge.classList.remove('opacity-0');
-                detectionBadge.classList.add('success-banner');
+                detectionBadge.classList.remove('-translate-y-4');
             }
 
             btnSpin.disabled = false;
             btnCopyMain.style.visibility = "visible";
-            
             saveHistory(a, b, op, foundName);
         }
 
         function saveHistory(a, b, op, match) {
-            const entry = { 
-                a, b, op, match, 
-                id: Date.now(),
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-            };
+            const entry = { a, b, op, match, id: Date.now(), time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
             state.history.unshift(entry);
             renderHistory();
         }
 
         function renderHistory() {
-            historyCount.textContent = state.history.length;
-            if (state.history.length > 0) {
-                emptyMsg.style.display = 'none';
-            }
-            
+            if (state.history.length > 0) emptyMsg.style.display = 'none';
             logContainer.innerHTML = "";
             state.history.forEach((item) => {
                 const div = document.createElement('div');
-                const opColor = item.op === '×' ? 'border-blue-500' : (item.op === '−' ? 'border-rose-500' : 'border-emerald-500');
-                const opSymbolColor = item.op === '×' ? 'text-blue-500' : (item.op === '−' ? 'text-rose-500' : 'text-emerald-500');
+                const opColor = item.op === '×' ? 'text-blue-500' : (item.op === '−' ? 'text-rose-500' : 'text-emerald-500');
                 
-                div.className = `bg-white p-8 rounded-[2.5rem] history-item border-2 border-slate-100 ${opColor} flex items-center justify-between group transition-all hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden`;
+                div.className = `bg-white p-8 rounded-[2.5rem] border-2 border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 group transition-all hover:border-slate-300 hover:shadow-xl relative overflow-hidden`;
                 
-                if (item.match) {
-                    const glow = document.createElement('div');
-                    glow.className = "absolute inset-0 bg-amber-400/5 pointer-events-none";
-                    div.appendChild(glow);
-                }
-
                 let matchHtml = item.match ? 
-                    `<div class="text-[9px] font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-full mb-3 inline-block custom-font tracking-widest uppercase">Legacy Detected: ${item.match}</div>` : '';
+                    `<div class="inline-block bg-amber-100 text-amber-700 text-[10px] font-black px-4 py-1.5 rounded-full mb-3 custom-font tracking-widest uppercase">Legacy: ${item.match}</div>` : '';
 
-                div.innerHTML += `
+                div.innerHTML = `
                     <div class="flex-1">
                         ${matchHtml}
-                        <div class="text-2xl font-black text-slate-800 leading-tight custom-font">
-                            ${item.a} <span class="${opSymbolColor} mx-1">${item.op}</span> ${item.b}
-                            ${item.op === '⊕' ? '<span class="text-[11px] text-emerald-400 ml-1">/ 2</span>' : ''}
+                        <div class="text-2xl md:text-3xl font-black text-slate-800 custom-font">
+                            ${item.a} <span class="${opColor} mx-2">${item.op}</span> ${item.b}
                         </div>
-                        <div class="text-[9px] font-bold text-slate-300 mt-4 uppercase tracking-[0.4em]">${item.time}</div>
                     </div>
-                    <button onclick="copySpecific('${item.a} ${item.op} ${item.b}', this)" class="opacity-0 group-hover:opacity-100 transition-all text-[10px] font-black text-slate-400 hover:text-slate-900 px-6 py-3 bg-slate-50 border border-slate-100 rounded-full custom-font tracking-widest">
-                        COPY
-                    </button>
+                    <div class="flex items-center gap-6">
+                        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">${item.time}</span>
+                        <button onclick="copySpecific('${item.a} ${item.op} ${item.b}${item.match ? ' (' + item.match + ')' : ''}', this)" class="opacity-0 group-hover:opacity-100 bg-slate-900 text-white text-[10px] font-black px-6 py-3 rounded-full transition-all tracking-widest">COPY</button>
+                    </div>
                 `;
                 logContainer.appendChild(div);
             });
@@ -380,16 +382,19 @@
             document.body.removeChild(tempInput);
             
             const originalContent = btn.innerHTML;
-            btn.innerHTML = "<span class='text-emerald-500'>COPIED!</span>";
-            setTimeout(() => { btn.innerHTML = originalContent; }, 1200);
+            btn.innerHTML = "<span>COPIED!</span>";
+            btn.classList.add('text-emerald-500');
+            setTimeout(() => { 
+                btn.innerHTML = originalContent; 
+                btn.classList.remove('text-emerald-500');
+            }, 1000);
         }
 
         window.copySpecific = (text, btn) => copyText(text, btn);
 
         btnSpin.addEventListener('click', spin);
         btnCopyMain.addEventListener('click', () => {
-            let formulaText = `${state.currentA} ${state.currentOp} ${state.currentB}`;
-            if (state.currentOp === '⊕') formulaText += " / 2";
+            const formulaText = `${state.currentA} ${state.currentOp} ${state.currentB}${successCases[`${state.currentA}${state.currentOp}${state.currentB}`] ? ' (' + successCases[`${state.currentA}${state.currentOp}${state.currentB}`] + ')' : ''}`;
             copyText(formulaText, btnCopyMain);
         });
 
@@ -397,12 +402,7 @@
             state.history = [];
             renderHistory();
             emptyMsg.style.display = 'block';
-            historyCount.textContent = "0";
         });
-
-        window.onload = () => {
-            console.log("Concept Lab V3: 2045Alphabet & OG Mode Active");
-        };
     </script>
 </body>
 </html>
